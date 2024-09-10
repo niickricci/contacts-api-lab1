@@ -1,5 +1,6 @@
 // const API_URL = "http://localhost:5000/api/contacts";
-const API_URL = "https://hulking-ripple-diamond.glitch.me/api/contacts";
+const API_URL =
+  "https://boundless-chartreuse-handspring.glitch.me/api/contacts";
 function API_GetContacts() {
   return new Promise((resolve) => {
     $.ajax({
