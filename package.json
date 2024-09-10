@@ -1,15 +1,19 @@
 {
-  "name": "contacts-api",
+  "name": "contacts-api-lab1",
   "version": "1.0.0",
-  "description": "Démo d'un petit service API",
+  "description": "",
   "main": "server.js",
-  "type":"module",
+  "type": "module",
   "engines": {
-    "node":"16.14.2"
+    "node": "16.14.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
-  "author": "Nicolas Chourot",
-  "license": "ISC"
+  "author": "Nicolas Ricci",
+  "license": "ISC",
+  "dependencies": {
+    "query-string": "^9.1.0"
+  }
 }
