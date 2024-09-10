@@ -3,27 +3,27 @@ let contentScrollPosition = 0;
 Init_UI();
 
 function Init_UI() {
+  renderContacts();
+  $("#createContact").on("click", async function () {
+    saveContentScrollPosition();
+    renderCreateContactForm();
+  });
+  $("#abort").on("click", async function () {
     renderContacts();
-    $('#createContact').on("click", async function () {
-        saveContentScrollPosition();
-        renderCreateContactForm();
-    });
-    $('#abort').on("click", async function () {
-        renderContacts();
-    });
-    $('#aboutCmd').on("click", function () {
-        renderAbout();
-    });
+  });
+  $("#aboutCmd").on("click", function () {
+    renderAbout();
+  });
 }
 
 function renderAbout() {
-    saveContentScrollPosition();
-    eraseContent();
-    $("#createContact").hide();
-    $("#abort").show();
-    $("#actionTitle").text("À propos...");
-    $("#content").append(
-        $(`
+  saveContentScrollPosition();
+  eraseContent();
+  $("#createContact").hide();
+  $("#abort").show();
+  $("#actionTitle").text("À propos...");
+  $("#content").append(
+    $(`
             <div class="aboutContainer">
                 <h2>Gestionnaire de contacts</h2>
                 <hr>
@@ -32,83 +32,88 @@ function renderAbout() {
                     d'interface utilisateur monopage réactive.
                 </p>
                 <p>
-                    Auteur: Nicolas Chourot
+                    Auteur: Nicolas Ricci
                 </p>
                 <p>
                     Collège Lionel-Groulx, automne 2024
                 </p>
             </div>
-        `))
+        `)
+  );
 }
 async function renderContacts() {
-    showWaitingGif();
-    $("#actionTitle").text("Liste des contacts");
-    $("#createContact").show();
-    $("#abort").hide();
-    let contacts = await API_GetContacts();
-    eraseContent();
-    if (contacts !== null) {
-        contacts.forEach(contact => {
-            $("#content").append(renderContact(contact));
-        });
-        restoreContentScrollPosition();
-        // Attached click events on command icons
-        $(".editCmd").on("click", function () {
-            saveContentScrollPosition();
-            renderEditContactForm(parseInt($(this).attr("editContactId")));
-        });
-        $(".deleteCmd").on("click", function () {
-            saveContentScrollPosition();
-            renderDeleteContactForm(parseInt($(this).attr("deleteContactId")));
-        });
-        $(".contactRow").on("click", function (e) { e.preventDefault(); })
-    } else {
-        renderError("Service introuvable");
-    }
+  showWaitingGif();
+  $("#actionTitle").text("Liste des contacts");
+  $("#createContact").show();
+  $("#abort").hide();
+  let contacts = await API_GetContacts();
+  eraseContent();
+  if (contacts !== null) {
+    contacts.forEach((contact) => {
+      $("#content").append(renderContact(contact));
+    });
+    restoreContentScrollPosition();
+    // Attached click events on command icons
+    $(".editCmd").on("click", function () {
+      saveContentScrollPosition();
+      renderEditContactForm(parseInt($(this).attr("editContactId")));
+    });
+    $(".deleteCmd").on("click", function () {
+      saveContentScrollPosition();
+      renderDeleteContactForm(parseInt($(this).attr("deleteContactId")));
+    });
+    $(".contactRow").on("click", function (e) {
+      e.preventDefault();
+    });
+  } else {
+    renderError("Service introuvable");
+  }
 }
 function showWaitingGif() {
-    $("#content").empty();
-    $("#content").append($("<div class='waitingGifcontainer'><img class='waitingGif' src='Loading_icon.gif' /></div>'"));
+  $("#content").empty();
+  $("#content").append(
+    $(
+      "<div class='waitingGifcontainer'><img class='waitingGif' src='Loading_icon.gif' /></div>'"
+    )
+  );
 }
 function eraseContent() {
-    $("#content").empty();
+  $("#content").empty();
 }
 function saveContentScrollPosition() {
-    contentScrollPosition = $("#content")[0].scrollTop;
+  contentScrollPosition = $("#content")[0].scrollTop;
 }
 function restoreContentScrollPosition() {
-    $("#content")[0].scrollTop = contentScrollPosition;
+  $("#content")[0].scrollTop = contentScrollPosition;
 }
 function renderError(message) {
-    eraseContent();
-    $("#content").append(
-        $(`
+  eraseContent();
+  $("#content").append(
+    $(`
             <div class="errorContainer">
                 ${message}
             </div>
         `)
-    );
+  );
 }
 function renderCreateContactForm() {
-    renderContactForm();
+  renderContactForm();
 }
 async function renderEditContactForm(id) {
-    showWaitingGif();
-    let contact = await API_GetContact(id);
-    if (contact !== null)
-        renderContactForm(contact);
-    else
-        renderError("Contact introuvable!");
+  showWaitingGif();
+  let contact = await API_GetContact(id);
+  if (contact !== null) renderContactForm(contact);
+  else renderError("Contact introuvable!");
 }
 async function renderDeleteContactForm(id) {
-    showWaitingGif();
-    $("#createContact").hide();
-    $("#abort").show();
-    $("#actionTitle").text("Retrait");
-    let contact = await API_GetContact(id);
-    eraseContent();
-    if (contact !== null) {
-        $("#content").append(`
+  showWaitingGif();
+  $("#createContact").hide();
+  $("#abort").show();
+  $("#actionTitle").text("Retrait");
+  let contact = await API_GetContact(id);
+  eraseContent();
+  if (contact !== null) {
+    $("#content").append(`
         <div class="contactdeleteForm">
             <h4>Effacer le contact suivant?</h4>
             <br>
@@ -126,37 +131,35 @@ async function renderDeleteContactForm(id) {
             <input type="button" value="Annuler" id="cancel" class="btn btn-secondary">
         </div>    
         `);
-        $('#deleteContact').on("click", async function () {
-            showWaitingGif();
-            let result = await API_DeleteContact(contact.Id);
-            if (result)
-                renderContacts();
-            else
-                renderError("Une erreur est survenue!");
-        });
-        $('#cancel').on("click", function () {
-            renderContacts();
-        });
-    } else {
-        renderError("Contact introuvable!");
-    }
+    $("#deleteContact").on("click", async function () {
+      showWaitingGif();
+      let result = await API_DeleteContact(contact.Id);
+      if (result) renderContacts();
+      else renderError("Une erreur est survenue!");
+    });
+    $("#cancel").on("click", function () {
+      renderContacts();
+    });
+  } else {
+    renderError("Contact introuvable!");
+  }
 }
 function newContact() {
-    contact = {};
-    contact.Id = 0;
-    contact.Name = "";
-    contact.Phone = "";
-    contact.Email = "";
-    return contact;
+  contact = {};
+  contact.Id = 0;
+  contact.Name = "";
+  contact.Phone = "";
+  contact.Email = "";
+  return contact;
 }
 function renderContactForm(contact = null) {
-    $("#createContact").hide();
-    $("#abort").show();
-    eraseContent();
-    let create = contact == null;
-    if (create) contact = newContact();
-    $("#actionTitle").text(create ? "Création" : "Modification");
-    $("#content").append(`
+  $("#createContact").hide();
+  $("#abort").show();
+  eraseContent();
+  let create = contact == null;
+  if (create) contact = newContact();
+  $("#actionTitle").text(create ? "Création" : "Modification");
+  $("#content").append(`
         <form class="form" id="contactForm">
             <input type="hidden" name="Id" value="${contact.Id}"/>
 
@@ -198,34 +201,32 @@ function renderContactForm(contact = null) {
             <input type="button" value="Annuler" id="cancel" class="btn btn-secondary">
         </form>
     `);
-    initFormValidation();
-    $('#contactForm').on("submit", async function (event) {
-        event.preventDefault();
-        let contact = getFormData($("#contactForm"));
-        contact.Id = parseInt(contact.Id);
-        showWaitingGif();
-        let result = await API_SaveContact(contact, create);
-        if (result)
-            renderContacts();
-        else
-            renderError("Une erreur est survenue!");
-    });
-    $('#cancel').on("click", function () {
-        renderContacts();
-    });
+  initFormValidation();
+  $("#contactForm").on("submit", async function (event) {
+    event.preventDefault();
+    let contact = getFormData($("#contactForm"));
+    contact.Id = parseInt(contact.Id);
+    showWaitingGif();
+    let result = await API_SaveContact(contact, create);
+    if (result) renderContacts();
+    else renderError("Une erreur est survenue!");
+  });
+  $("#cancel").on("click", function () {
+    renderContacts();
+  });
 }
 
 function getFormData($form) {
-    const removeTag = new RegExp("(<[a-zA-Z0-9]+>)|(</[a-zA-Z0-9]+>)", "g");
-    var jsonObject = {};
-    $.each($form.serializeArray(), (index, control) => {
-        jsonObject[control.name] = control.value.replace(removeTag, "");
-    });
-    return jsonObject;
+  const removeTag = new RegExp("(<[a-zA-Z0-9]+>)|(</[a-zA-Z0-9]+>)", "g");
+  var jsonObject = {};
+  $.each($form.serializeArray(), (index, control) => {
+    jsonObject[control.name] = control.value.replace(removeTag, "");
+  });
+  return jsonObject;
 }
 
 function renderContact(contact) {
-    return $(`
+  return $(`
      <div class="contactRow" contact_id=${contact.Id}">
         <div class="contactContainer noselect">
             <div class="contactLayout">

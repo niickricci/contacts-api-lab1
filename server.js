@@ -33,7 +33,7 @@ function validateContact(contact) {
   return "";
 }
 function validateBookmark(bookmark) {
-  if (!("Name" in bookmark)) return "Title is missing";
+  if (!("Title" in bookmark)) return "Title is missing";
   if (!("Url" in bookmark)) return "Url is missing";
   if (!("Category" in bookmark)) return "Category is missing";
   return "";
@@ -191,7 +191,7 @@ async function handleContactsServiceRequest(req, res) {
             if (bookmark.Id > maxId) maxId = bookmark.Id;
           });
           newBookmark.Id = maxId + 1;
-          contacts.push(newBookmark);
+          bookmarks.push(newBookmark);
           fs.writeFileSync(bookmarksFilePath, JSON.stringify(bookmarks));
           res.writeHead(201, { "content-type": "application/json" });
           res.end(JSON.stringify(newBookmark));
@@ -209,7 +209,7 @@ async function handleContactsServiceRequest(req, res) {
             if (modifiedBookmark.Id == id) {
               let storedBookmark = null;
               for (let bookmark of bookmarks) {
-                if (contact.Id === id) {
+                if (bookmark.Id === id) {
                   storedBookmark = bookmark;
                   break;
                 }

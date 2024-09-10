@@ -1,8 +1,11 @@
 //<span class="cmdIcon fa-solid fa-ellipsis-vertical"></span>
 let contentScrollPosition = 0;
+let selectedCategory = "";
 Init_UI();
 
-function Init_UI() {
+async function Init_UI() {
+  let bookmarks = await API_GetBookmarks();
+  let categories = [...new Set(bookmarks.map((bookmark) => bookmark.Category))];
   renderBookmarks();
   $("#createBookmark").on("click", async function () {
     saveContentScrollPosition();
@@ -11,6 +14,9 @@ function Init_UI() {
   $("#abort").on("click", async function () {
     renderBookmarks();
   });
+
+  updateDropDownMenu(categories);
+
   $("#aboutCmd").on("click", function () {
     renderAbout();
   });
@@ -49,6 +55,11 @@ async function renderBookmarks() {
   let bookmarks = await API_GetBookmarks();
   eraseContent();
   if (bookmarks !== null) {
+    if (selectedCategory !== "") {
+      bookmarks = bookmarks.filter(
+        (bookmark) => bookmark.Category === selectedCategory
+      );
+    }
     bookmarks.forEach((bookmark) => {
       $("#content").append(renderBookmark(bookmark));
     });
@@ -155,8 +166,8 @@ function renderBookmarkForm(bookmark = null) {
   $("#createBookmark").hide();
   $("#abort").show();
   eraseContent();
-  let bookmark = bookmark == null;
-  if (bookmark) bookmark = newBookmark();
+  let create = bookmark == null;
+  if (create) bookmark = newBookmark();
   $("#actionTitle").text(create ? "Création" : "Modification");
   $("#content").append(`
         
@@ -172,14 +183,14 @@ function renderBookmarkForm(bookmark = null) {
                 required
                 RequireMessage="Veuillez entrer un titre"
                 InvalidMessage="Le titre comporte un caractère illégal" 
-                value="${bookmark.Name}"
+                value="${bookmark.Title}"
             />
-            <label for="Url" class="form-label">Url </label>
+            <label for="Url" class="form-label">URL </label>
             <input
-                class="form-control Phone"
+                class="form-control URL"
                 name="Url"
                 id="Url"
-                placeholder="www.example.com"
+                placeholder="https://www.example.com"
                 required
                 RequireMessage="Veuillez entrer un url" 
                 InvalidMessage="Veuillez entrer un url valide"
@@ -187,7 +198,7 @@ function renderBookmarkForm(bookmark = null) {
             />
             <label for="Category" class="form-label">Catégorie </label>
             <input 
-                class="form-control Email"
+                class="form-control Aplha"
                 name="Category"
                 id="Category"
                 placeholder="Catégorie"
@@ -230,8 +241,10 @@ function renderBookmark(bookmark) {
      <div class="bookmarkRow" bookmark_id=${bookmark.Id}">
         <div class="bookmarkContainer noselect">
             <div class="bookmarkLayout">
-                <span class="bookmarkTitle">${bookmark.Title}</span>
-                <span class="bookmarkCategory">${bookmark.Url}</span>
+              <div class="bookmarkTitle">
+                <img class="bookmarkIcon" src="http://www.google.com/s2/favicons?sz=64&domain=${bookmark.Url}">
+                ${bookmark.Title}</div>
+              <div class="bookmarkCategory">${bookmark.Category}</div>
             </div>
             <div class="bookmarkCommandPanel">
                 <span class="editCmd cmdIcon fa fa-pencil" editBookmarkId="${bookmark.Id}" title="Modifier ${bookmark.Title}"></span>
@@ -240,4 +253,49 @@ function renderBookmark(bookmark) {
         </div>
     </div>           
     `);
+}
+
+function updateDropDownMenu(categories) {
+  let DDMenu = $("#DDMenu");
+  let selectClass = selectedCategory === "" ? "fa-check" : "fa-fw";
+  DDMenu.empty();
+  DDMenu.append(
+    $(`
+      <div class="dropdown-item menuItemLayout" id="allCatCmd">
+        <i class="menuIcon fa ${selectClass} mx-2"></i> Toutes les catégories
+      </div>
+      `)
+  );
+  DDMenu.append($(`<div class="dropdown-divider"></div>`));
+  categories.forEach((category) => {
+    selectClass = selectedCategory === category ? "fa-check" : "fa-fw";
+    DDMenu.append(
+      $(`
+      <div class="dropdown-item menuItemLayout category" id="allCatCmd">
+        <i class="menuIcon fa ${selectClass} mx-2"></i> ${category}
+      </div>
+      `)
+    );
+  });
+  DDMenu.append($(`<div class="dropdown-divider"></div> `));
+  DDMenu.append(
+    $(`
+    <div class="dropdown-item menuItemLayout" id="aboutCmd">
+      <i class="menuIcon fa fa-info-circle mx-2"></i> À propos...
+    </div>
+    `)
+  );
+  $("#aboutCmd").on("click", function () {
+    renderAbout();
+  });
+  $("#allCatCmd").on("click", function () {
+    selectedCategory = "";
+    updateDropDownMenu(categories);
+    renderBookmarks();
+  });
+  $(".category").on("click", function () {
+    selectedCategory = $(this).text().trim();
+    updateDropDownMenu(categories);
+    renderBookmarks();
+  });
 }
