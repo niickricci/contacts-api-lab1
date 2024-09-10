@@ -1,6 +1,5 @@
-//const API_URL = "http://localhost:5000/api/bookmarks";
-const API_URL =
-  "https://boundless-chartreuse-handspring.glitch.me/api/bookmarks";
+const API_URL = "http://localhost:5000/api/bookmarks";
+//const API_URL = "https://ricci-server-api.glitch.me/api/bookmarks";
 function API_GetBookmarks() {
   return new Promise((resolve) => {
     $.ajax({
